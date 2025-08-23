@@ -12,8 +12,7 @@ const User = sequelize.define("User",{
         allowNull : false,
         validate: {
             notEmpty: { msg: "Le nom ne doit pas être vide" },
-            len: [3, 20],
-            isAlphanumeric: true,
+            len: [3, 50],
           }
     },
     prenom : {
@@ -21,8 +20,7 @@ const User = sequelize.define("User",{
         allowNull : false,
         validate: {
             notEmpty: { msg: "Le prenom ne doit pas être vide" },
-            len: [3, 20],
-            isAlphanumeric: true,
+            len: [3, 50],
           }
     },
     email : {

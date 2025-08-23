@@ -4,6 +4,8 @@ const morgan = require('morgan')
 const cors = require('cors');
 
 const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const studentRoutes = require('./routes/student.routes');
 
 const app = express();
 
@@ -13,6 +15,8 @@ app
   .use(cors()); 
 
 app.use("/api", authRoutes);
+app.use("/api", userRoutes);
+app.use("/api", studentRoutes);
 
 app
   .use((req,res) => {

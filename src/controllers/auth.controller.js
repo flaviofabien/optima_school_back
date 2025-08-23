@@ -5,52 +5,7 @@ const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer");
 const crypto = require('crypto');
 const { Op } = require("sequelize"); 
-
-const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-
-exports.register = async (req, res) => {
-  try {
-    const { nom ,prenom ,  email, password, role } = req.body;
-
-    const roleEnum = ["admin","Enseignant","parent","élève"];
-    
-    if (!roleEnum.includes(role))  {
-      return  res.status(404).json({ 
-        message: "Role doit etre dans admin ou Enseignant ou parent ou élève ", 
-      });
-    } 
-
-    if (!regex.test(password)) {
-      return res.status(400).json({
-        message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial."
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await User.create({
-      nom , prenom , email, password: hashedPassword, role 
-    });
-
-    res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
-  } catch (error) {
-    console.log(error);
-    
-    if (error.name === "SequelizeUniqueConstraintError") {
-      return res.status(400).json({ 
-        message: error.errors[0].message || "Contrainte unique violée" 
-      });
-    }
-
-    if (error.name === "SequelizeValidationError") {
-      return res.status(400).json({ 
-        message: error.errors.map(e => e.message) 
-      });
-    }
-  
-    res.status(500).json({ message: 'Error creating user', error });
-  }
-};
+require('../constant/global');
 
 exports.login = async (req, res) => {
   try {
@@ -96,7 +51,7 @@ exports.resetPassword = async (req, res) => {
       }
     });
 
-    const link = `http://localhost:5000/reset-password/${token}`;
+    const link = `http://localhost:5173/update-password/${token}`;
 
     await transporter.sendMail({
       from: '"Gestion Hotel" <' + process.env.ADMIN_MAILER_EMAIL + '>',
@@ -138,7 +93,7 @@ exports.updatePassword = async (req, res) => {
     });
 
 
-    if (!regex.test(newPassword)) {
+    if (!REGEX.test(newPassword)) {
       return res.status(400).json({
         message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial."
       });
