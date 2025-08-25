@@ -1,37 +1,36 @@
-const Student = require('../models/student.model');
+const Teacher = require('../models/teacher.model');
 require('../constant/global');
 const User = require('../models/user.model');
 
-exports.getAllStudents = async (req, res) => {
+exports.getAllTeachs = async (req, res) => {
   try {
-    const newStudent = await Student.findAndCountAll({include: [{model: User,required: true}] })
-
-    res.json({ message: 'students retrieved successfully', data: newStudent });
+    const students = await Teacher.findAll({include: [{model: User,required: true}] });
+    res.json({ message: 'students retrieved successfully', data: students });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving students', error });
   }
 };
 
-exports.postStudents = async (req, res) => {
+exports.postTeachs = async (req, res) => {
   try {
-    const { userId , matricule ,  dateNaissance, sex, address , phone , classes , status } = req.body;
+    const { userId  ,  specialite, sex, address , 
+        phone , classes , status ,  } = req.body;
 
-    const user = await User.findByPk(userId);
+    const StudentUnique = await User.findByPk(userId);
 
-    if (!user) {
+    if (!StudentUnique) {
       return res.status(400).json({
         message: "identifiant de l'utilisateur est invalide."
       });
     }
 
-    if (user.role !== "élève") {
-      return res.status(400).json({
-        message: "Cet utilisateur n'est pas un élève."
-      });
-    }
 
-    const newUser = await Student.create({
-        userId , matricule ,  dateNaissance, sex, address , phone , classes , status
+    if (StudentUnique.role !== "Enseignant") return  res.status(400).json({
+        message: "L'Enseignant n'existe pas dans la base de donner ??"
+    });
+
+    const newUser = await Teacher.create({
+        userId  ,  specialite, sex, address , phone , classes , status
     });
 
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
@@ -54,9 +53,9 @@ exports.postStudents = async (req, res) => {
   }
 };
 
-exports.getOneStudent = async (req, res) => {
+exports.getOneTeach = async (req, res) => {
   try {
-    const student = await Student.findByPk(req.params.id);
+    const student = await Teacher.findByPk(req.params.id);
     if (!student) return res.status(404).json({ message: 'student not found' });
     
     res.json({ message: 'student retrieved successfully', data: student });
@@ -65,16 +64,16 @@ exports.getOneStudent = async (req, res) => {
   }
 };
 
-exports.putStudent = async (req, res) => {
+exports.putTeach = async (req, res) => {
   try {
     const {userId , matricule ,  dateNaissance, sex, address , 
         phone , classes , status } = req.body;
 
-    const [updated] = await Student.update({ userId , matricule ,  dateNaissance, sex, address , 
+    const [updated] = await Teacher.update({ userId , matricule ,  dateNaissance, sex, address , 
         phone , classes , status }, { where: { id: req.params.id } });
     if (!updated) return res.status(404).json({ message: 'User not found' });
 
-    const updatedUser = await Student.findByPk(req.params.id);
+    const updatedUser = await Teacher.findByPk(req.params.id);
 
     res.json({ message: 'User updated successfully', data: updatedUser });
   } catch (error) {
@@ -82,9 +81,9 @@ exports.putStudent = async (req, res) => {
   }
 };
 
-exports.deleteStudent = async (req, res) => {
+exports.deleteTeach = async (req, res) => {
   try {
-    const deleted = await Student.destroy({ where: { id: req.params.id } });
+    const deleted = await Teacher.destroy({ where: { id: req.params.id } });
     if (!deleted) return res.status(404).json({ message: 'User not found' });
 
     res.json({ message: 'User deleted successfully' });

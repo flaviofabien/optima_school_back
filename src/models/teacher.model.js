@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const User = require("./user.model");
 
-const Student = sequelize.define("Student",{
+const Teacher = sequelize.define("Teacher",{
     id : {
         type : DataTypes.INTEGER,
         primaryKey : true , 
@@ -16,22 +16,6 @@ const Student = sequelize.define("Student",{
           key: "id",
         },
         unique: true, 
-      },
-    matricule : {
-        type : DataTypes.STRING,
-        allowNull : false,
-        validate: {
-            notEmpty: { msg: "Le nom ne doit pas être vide" },
-            len: [3, 50],
-        }
-    },
-    dateNaissance : {
-        type : DataTypes.STRING,
-        allowNull : false,
-        validate: {
-            notEmpty: { msg: "Le prenom ne doit pas être vide" },
-            len: [3, 50],
-          }
     },
     sex : {
         type : DataTypes.STRING,
@@ -55,11 +39,11 @@ const Student = sequelize.define("Student",{
             notEmpty: { msg: "Le phone ne doit pas être vide" },
         }
     },
-    classes: {
+    specialite: {
         type: DataTypes.STRING,
         allowNull : false, 
         validate: {
-            notEmpty: { msg: "Le phone ne doit pas être vide" },
+            notEmpty: { msg: "Le specialite ne doit pas être vide" },
         }
       },
     status: {
@@ -67,16 +51,16 @@ const Student = sequelize.define("Student",{
         defaultValue: "active", 
         allowNull : false, 
         validate: {
-            notEmpty: { msg: "Le phone ne doit pas être vide" },
+            notEmpty: { msg: "Le status ne doit pas être vide" },
         }
       },
 },{
     timestamps : true,
     createdAt : false,
     updatedAt : false
-})
+});
 
-User.hasOne(Student, { foreignKey: "userId", onDelete: "CASCADE" });
-Student.belongsTo(User, { foreignKey: "userId" });
+User.hasOne(Teacher, { foreignKey: "userId", onDelete: "CASCADE" });
+Teacher.belongsTo(User, { foreignKey: "userId" });
 
-module.exports = Student;
+module.exports = Teacher;

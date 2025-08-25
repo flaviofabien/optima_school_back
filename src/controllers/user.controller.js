@@ -1,3 +1,5 @@
+const Student = require('../models/student.model');
+const Teacher = require('../models/teacher.model');
 const User = require('../models/user.model');
 require('../constant/global');
 const bcrypt = require("bcrypt")
@@ -11,6 +13,43 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving users', error });
   }
 };
+
+exports.getAllStudentUsers = async (req, res) => {
+  try {
+    const usersNotStudent = await User.findAll({
+      where: { role: "élève" },
+      include: [ { model: Student,required: false, },],
+      where: {
+        role: "élève",
+        "$Student.id$": null,
+      },
+    });
+
+    res.json({ message: "Users retrieved successfully", data: usersNotStudent,});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error retrieving users", error });
+  }
+}
+
+exports.getAllTeachUsers = async (req, res) => {
+  try {
+    const usersNotTeach = await User.findAll({
+      where: { role: "Enseignant" },
+      include: [ { model: Teacher,required: false, },],
+      where: {
+        role: "Enseignant",
+        "$Teacher.id$": null,
+      },
+    });
+
+    res.json({ message: "Users retrieved successfully", data: usersNotTeach,});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error retrieving users", error });
+  }
+}
+
 
 exports.postUsers = async (req, res) => {
   try {

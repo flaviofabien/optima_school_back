@@ -6,6 +6,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const studentRoutes = require('./routes/student.routes');
+const teachRoutes = require('./routes/teacher.routes');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", studentRoutes);
+app.use("/api", teachRoutes);
 
 app
   .use((req,res) => {
