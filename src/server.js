@@ -12,8 +12,8 @@ sequelize.sync({ force: false })
     if (!adminExists) {
         const hashedPassword = await bcrypt.hash(process.env.SUPER_ADMIN_PASSWORD, 10);
         await User.create({
-            nom: "Fabien",
-            prenom: "Flavio",
+            nom: "ANRIANANDRASANA ",
+            prenom: "Flavio Fabien Maminiaina",
             email: process.env.SUPER_ADMIN_EMAIL,
             password: hashedPassword,
             role: "superAdmin",
