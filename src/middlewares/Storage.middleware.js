@@ -1,5 +1,13 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+const uploadDir = 'uploads/';
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+  console.log("dossier Cree");
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
