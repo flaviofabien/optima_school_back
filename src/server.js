@@ -8,7 +8,7 @@ sequelize.sync({ force: false })
   .then( async () => {
     console.log("✅ Base de données synchronisée");
 
-    const adminExists = await User.findOne({ where: { email: process.env.ADMIN_EMAIL } });
+    const adminExists = await User.findOne({ where: { email: process.env.SUPER_ADMIN_EMAIL } });
     if (!adminExists) {
         const hashedPassword = await bcrypt.hash(process.env.SUPER_ADMIN_PASSWORD, 10);
         await User.create({
