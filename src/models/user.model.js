@@ -12,7 +12,10 @@ const User = sequelize.define("User",{
         allowNull : false,
         validate: {
             notEmpty: { msg: "Le nom ne doit pas être vide" },
-            len: [3, 50],
+            len: {
+                args : [3, 50],
+                msg: "Le nom ne peut pas être inferieur à 3 (<3) ou superieur à 50 (>50)"   
+            } 
           }
     },
     prenom : {
@@ -20,8 +23,11 @@ const User = sequelize.define("User",{
         allowNull : false,
         validate: {
             notEmpty: { msg: "Le prenom ne doit pas être vide" },
-            len: [3, 50],
-          }
+            len: {
+                args : [3, 50],
+                msg: "Le prenom ne doit pas être vide"   
+            }
+        }
     },
     email : {
         type : DataTypes.STRING,
@@ -55,7 +61,7 @@ const User = sequelize.define("User",{
     resetPasswordExpires: {
         type: DataTypes.DATE,
         allowNull: true
-      }
+    }
       
 },{
     timestamps : true,

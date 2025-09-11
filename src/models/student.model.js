@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
-const User = require("./user.model");
+const Classe = require("./classes.model");
 
 const Student = sequelize.define("Student",{
     id : {
@@ -8,14 +8,14 @@ const Student = sequelize.define("Student",{
         primaryKey : true , 
         autoIncrement : true,
     },
-    userId: {
+    idClasse: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: User,
+          model: Classe, 
           key: "id",
         },
-        unique: true, 
+        onDelete: "CASCADE",
       },
     matricule : {
         type : DataTypes.STRING,
@@ -55,13 +55,6 @@ const Student = sequelize.define("Student",{
             notEmpty: { msg: "Le phone ne doit pas être vide" },
         }
     },
-    classes: {
-        type: DataTypes.STRING,
-        allowNull : false, 
-        validate: {
-            notEmpty: { msg: "Le phone ne doit pas être vide" },
-        }
-      },
     status: {
         type: DataTypes.STRING,
         defaultValue: "active", 
@@ -69,14 +62,59 @@ const Student = sequelize.define("Student",{
         validate: {
             notEmpty: { msg: "Le phone ne doit pas être vide" },
         }
-      },
+    },
+    nom : {
+        type : DataTypes.STRING,
+        allowNull : false,
+        validate: {
+            notEmpty: { msg: "Le nom ne doit pas être vide" },
+            len: [3, 50],
+          }
+    },
+    prenom : {
+        type : DataTypes.STRING,
+        allowNull : false,
+        validate: {
+            notEmpty: { msg: "Le prenom ne doit pas être vide" },
+            len: [3, 50],
+          }
+    },
+    email : {
+        type : DataTypes.STRING,
+        allowNull : false,
+        validate: {
+            notEmpty: { msg: "Le email ne doit pas être vide" },
+        },
+    },
+    password : {
+        type : DataTypes.STRING,
+        allowNull : false,
+        validate: {
+            notEmpty: { msg: "Le password ne doit pas être vide" },
+        }
+    },
+    role : {
+        type : DataTypes.STRING,
+        allowNull : false, 
+        validate: {
+            notEmpty: { msg: "Le role ne doit pas être vide" },
+        }
+    },
+    img : {
+        type : DataTypes.STRING,
+        allowNull : false, 
+        validate: {
+            notEmpty: { msg: "Le role ne doit pas être vide" },
+        }
+    },
 },{
     timestamps : true,
     createdAt : false,
     updatedAt : false
 })
 
-User.hasOne(Student, { foreignKey: "userId", onDelete: "CASCADE" });
-Student.belongsTo(User, { foreignKey: "userId" });
+Student.belongsTo(Classe, { foreignKey: "idClasse", onDelete: "CASCADE" });
+Classe.hasMany(Student, { foreignKey: "idClasse" });
+
 
 module.exports = Student;

@@ -6,16 +6,22 @@ module.exports = (req,res,next) => {
 
     if(!authHeader){
         const message = "Vous n'avez pas fourni de jeton d'authorisation , ajouter-en un dans l'entete de la requeste "
-        res.status(500).json({message })
+        return res.status(500).json({message })
     }
 
     const token = authHeader.split(" ")[1]
-    const decodedToken = jwt.verify(token,privateKey,( error , decodedToken)=>{
-        if(error){
-            const message = "Utilisateur n'est pas autorisé à acceder a cette ressource"
-            return res.status(401).json({message , data:error})
-        }else {
-            next()
-        }
-    })
+
+    try {
+      const decodedToken = jwt.verify(token, privateKey);
+
+      req.user = {
+        id: decodedToken.id,
+        role: decodedToken.role,
+      };
+  
+      next(); 
+    } catch (error) {
+        const message = "Utilisateur non autorisé à accéder à cette ressource.";
+        return res.status(401).json({ message, error }); // ✅ blocage clair
+      }
 } 

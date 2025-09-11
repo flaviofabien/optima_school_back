@@ -1,11 +1,10 @@
-const { Op } = require('sequelize');
-const Teacher = require('../models/teacher.model');
-const Classe = require('../models/classes.model');
 require('../constant/global');
+const { Op } = require('sequelize');
+const Ecole = require('../models/ecole.model');
 
-exports.getAllTeachs = async (req, res) => {
+exports.getAllEcoles = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; 
+     const page = parseInt(req.query.page) || 1; 
     const limit = parseInt(req.query.limit) || 6; 
     const offset = (page - 1) * limit;
     const sortBy = req.query.sortBy || 'nom'; 
@@ -14,41 +13,49 @@ exports.getAllTeachs = async (req, res) => {
 
     const whereCondition = search ? {
          [Op.or]: [
-          { nom: { [Op.like]: `%${search}%` } },
-          { prenom: { [Op.like]: `%${search}%` } },
-          { matricule: { [Op.like]: `%${search}%` } },
-          { dateNaissance: { [Op.like]: `%${search}%` } },
-          { sex: { [Op.like]: `%${search}%` } },
-          { address: { [Op.like]: `%${search}%` } },
-          { phone: { [Op.like]: `%${search}%` } },
-          { email: { [Op.like]: `%${search}%` } },
+             { nom: { [Op.like]: `%${search}%` } },
+             { adresse: { [Op.like]: `%${search}%` } },
          ]
     } : {};
 
-    const result = await Teacher.findAndCountAll({
+    const result = await Ecole.findAndCountAll({
       order: [[sortBy, order]],
       where: whereCondition,
       limit,
       offset,
     });
 
+
+    const data = result.rows.map(record => {
+      const obj = record.toJSON();
+
+      if (typeof obj.type === 'string') {
+        try {
+          obj.type = JSON.parse(obj.type);
+        } catch (err) {
+          console.warn('Erreur parsing type:', obj.type);
+        }
+      }
+
+      return obj;
+    });
     const totalItems = result.count;
     const totalPages = Math.ceil(totalItems / limit);
 
+    console.log(data);
     res.json({
       message: 'Schools retrieved successfully',
-      data: result.rows,
+      data,
       totalItems,
       totalPages,
       currentPage: page,
     });
-    
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving students', error });
+    res.status(500).json({ message: 'Error retrieving users', error });
   }
 };
 
-exports.postTeachs = async (req, res) => {
+exports.postEcoles = async (req, res) => {
   try {
     const body = req.body;
 
@@ -56,12 +63,12 @@ exports.postTeachs = async (req, res) => {
     const file = req.file;
     const imageUrl = `/uploads/${file.filename}`;
 
-    const newUser = await Teacher.create({
+    const newUser = await Ecole.create({
       ...body , img : imageUrl
     });
-
+    
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
-  } catch (error) {    
+  } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({ 
         message: error.errors[0].message || "Contrainte unique violée" 
@@ -78,18 +85,18 @@ exports.postTeachs = async (req, res) => {
   }
 };
 
-exports.getOneTeach = async (req, res) => {
+exports.getOneEcole = async (req, res) => {
   try {
-    const student = await Teacher.findByPk(req.params.id);
-    if (!student) return res.status(404).json({ message: 'student not found' });
+    const user = await Ecole.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
     
-    res.json({ message: 'student retrieved successfully', data: student });
+    res.json({ message: 'User retrieved successfully', data: user });
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving student', error });
+    res.status(500).json({ message: 'Error retrieving user', error });
   }
 };
 
-exports.putTeach = async (req, res) => {
+exports.putEcole = async (req, res) => {
   try {
     const body = req.body;
 
@@ -99,13 +106,13 @@ exports.putTeach = async (req, res) => {
       body.img = imageUrl;
     }
 
-    const [updated] = await Teacher.update(body, { where: { id: req.params.id } });
+    const [updated] = await Ecole.update(body, { where: { id: req.params.id } });
 
     if (updated === 0) {
       return res.status(404).json({ message: 'École non trouvée ❌' });
     }
 
-    const updatedEcole = await Teacher.findByPk(req.params.id);
+    const updatedEcole = await Ecole.findByPk(req.params.id);
     res.status(200).json({ message: 'École mise à jour avec succès ✅', data: updatedEcole });
 
   } catch (error) {
@@ -125,9 +132,10 @@ exports.putTeach = async (req, res) => {
   }
 };
 
-exports.deleteTeach = async (req, res) => {
+
+exports.deleteEcole = async (req, res) => {
   try {
-    const deleted = await Teacher.destroy({ where: { id: req.params.id } });
+    const deleted = await Ecole.destroy({ where: { id: req.params.id } });
     if (!deleted) return res.status(404).json({ message: 'User not found' });
 
     res.json({ message: 'User deleted successfully' });

@@ -6,7 +6,7 @@ const {getAllUsers,getOneUser,putUser,deleteUser,postUsers,getAllStudentUsers,ge
 router.get('/users/',authMiddleware,getAllUsers);
 router.get('/users/student',authMiddleware,getAllStudentUsers);
 router.get('/users/teach',authMiddleware,getAllTeachUsers);
-router.post('/users/',authMiddleware,postUsers);
+router.post('/users/',postUsers);
 router.get('/user/:id',authMiddleware,getOneUser);
 router.put('/user/:id',authMiddleware,putUser);
 router.delete('/user/:id',authMiddleware,deleteUser);

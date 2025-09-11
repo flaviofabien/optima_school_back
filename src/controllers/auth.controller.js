@@ -15,7 +15,15 @@ exports.login = async (req, res) => {
     const passwordIsValid = await bcrypt.compare(req.body.password , user.password);
     if (!passwordIsValid) return res.status(404).json({message:"Le mot de passe n'existe pas"});
 
-    const token = jwt.sign({userId : user.id},privateKey,{expiresIn : "24h"})
+    const token = jwt.sign(
+      {
+        id: user.id,       
+        role: user.role      
+      },
+      privateKey,
+      { expiresIn: "24h" }
+    );
+
 
     res.json({
         message: "Utilisateur connecté avec succès ✅",

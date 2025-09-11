@@ -54,12 +54,10 @@ exports.getAllTeachUsers = async (req, res) => {
 exports.postUsers = async (req, res) => {
   try {
     const { nom ,prenom ,  email, password, role } = req.body;
-
-    const roleEnum = ["admin","Enseignant","parent","élève"];
     
-    if (!roleEnum.includes(role))  {
+    if (role !== "admin" )  {
       return  res.status(404).json({ 
-        message: "Role doit etre dans admin ou Enseignant ou parent ou élève ", 
+        message: "Role doit etre dans admin  ", 
       });
     } 
 
@@ -108,10 +106,8 @@ exports.getOneUser = async (req, res) => {
 
 exports.putUser = async (req, res) => {
   try {
-    const { nom , prenom , email, role , password } = req.body;
-
-    const [updated] = await User.update({ nom , prenom , email, role , password }, { where: { id: req.params.id } });
-    if (!updated) return res.status(404).json({ message: 'User not found' });
+    const [updated] = await User.update(req.body, { where: { id: req.params.id } });
+    if (!updated) return res.status(404).json({ message: 'Aucun modification ' });
 
     const updatedUser = await User.findByPk(req.params.id);
 
