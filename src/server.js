@@ -8,7 +8,7 @@ sequelize.sync({ force: false })
     console.log("✅ Base de données synchronisée");
 
     app.listen(port, () => {
-        console.log(`Server is running at http://localhost:${port}`);
+        console.log(`Server is running at http://${process.env.ADMIN_MYSQL_HOST}:${port}`);
     });
   })
 
