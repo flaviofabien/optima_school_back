@@ -1,6 +1,7 @@
 const app = require('./app');
 const sequelize = require("./config/db");
 const User = require('./models/user.model');
+const bcrypt = require("bcrypt")
 
 const port = process.env.ADMIN_PORT ? parseInt(process.env.ADMIN_PORT) : 4000;
 
