@@ -1,24 +1,64 @@
+const { Op } = require('sequelize');
 const Classe = require('../models/classes.model');
 const Ecole = require('../models/ecole.model');
 require('../constant/global');
 
 exports.getAllClasses = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const classe = await Classe.findAll({
-      include: [{ model: Ecole , required: false }],
-      where: { idUser: userId }
-    });
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 5; 
+    const offset = (page - 1) * limit;
+    const sortBy = req.query.sortBy || 'nom'; 
+    const order = req.query.order === 'desc' ? 'DESC' : 'ASC'; 
+    const search = req.query.search || ''; 
 
-    res.json({ message: 'classe retrieved successfully', data: classe });
+    const whereCondition = search ? {
+      [Op.or]: [
+        { nom: { [Op.iLike]: `%${search}%` } }, 
+        { '$Ecole.nom$': { [Op.iLike]: `%${search}%` } } 
+      ]
+    } : {};
+
+    let orderClause;
+    if (sortBy === 'ecole') {
+      orderClause = [[{ model: Ecole }, 'nom', order]];
+    } else {
+      orderClause = [[sortBy, order]];
+    }
+
+    let includeOptions = {
+      model: Ecole,
+      required: false,
+    };
+    if (search || sortBy === 'ecole') {
+      includeOptions.required = true;
+    }
+
+    const result = await Classe.findAndCountAll({
+      order: orderClause,
+      include: [includeOptions],
+      where: whereCondition,
+      limit,
+      offset
+    });
+    
+    res.json({
+      message: 'classes retrieved successfully',
+      data: result.rows,
+      totalItems: result.count,
+      totalPages: Math.ceil(result.count / limit),
+      currentPage: page,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving users', error });
+    console.log(error);
+    res.status(500).json({ message: 'Error retrieving classes', error });
   }
 };
 
+
 exports.postClasses = async (req, res) => {
   try {
-    const {idEcole ,  nom , idUser } = req.body;
+    const {idEcole ,  nom  } = req.body;
 
     const ecole = await Ecole.findByPk(idEcole);
 
@@ -26,15 +66,11 @@ exports.postClasses = async (req, res) => {
         return res.status(400).json({
           message: "l'ecole n'existe pas."
         });
-      }
-    if (!idUser) {
-        return res.status(400).json({
-          message: "idUser n'existe pas."
-        });
-      }
+    }
+
   
     const newUser = await Classe.create({
-        idEcole ,  nom , idUser
+        idEcole ,  nom
     });
 
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });

@@ -4,8 +4,9 @@ const Ecole = require('../models/ecole.model');
 
 exports.getAllEcoles = async (req, res) => {
   try {
-     const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 6; 
+    const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 3; 
     const offset = (page - 1) * limit;
     const sortBy = req.query.sortBy || 'nom'; 
     const order = req.query.order === 'desc' ? 'DESC' : 'ASC'; 
@@ -13,14 +14,14 @@ exports.getAllEcoles = async (req, res) => {
 
     const whereCondition = search ? {
          [Op.or]: [
-             { nom: { [Op.like]: `%${search}%` } },
-             { adresse: { [Op.like]: `%${search}%` } },
+             { nom: { [Op.iLike]: `%${search}%` } },
+             { adresse: { [Op.iLike]: `%${search}%` } },
          ]
     } : {};
 
     const result = await Ecole.findAndCountAll({
       order: [[sortBy, order]],
-      where: whereCondition,
+      where: {...whereCondition,idUser: userId },
       limit,
       offset,
     });
@@ -42,7 +43,6 @@ exports.getAllEcoles = async (req, res) => {
     const totalItems = result.count;
     const totalPages = Math.ceil(totalItems / limit);
 
-    console.log(data);
     res.json({
       message: 'Schools retrieved successfully',
       data,
@@ -64,7 +64,7 @@ exports.postEcoles = async (req, res) => {
     const imageUrl = `/uploads/${file.filename}`;
 
     const newUser = await Ecole.create({
-      ...body , img : imageUrl
+      ...body , img : imageUrl 
     });
     
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });

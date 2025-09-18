@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt")
 
 const port = process.env.ADMIN_PORT ? parseInt(process.env.ADMIN_PORT) : 4000;
 
-sequelize.sync({ force: false })
+sequelize.sync({ force: true })
   .then( async () => {
     console.log("✅ Base de données synchronisée");
 
@@ -25,6 +25,7 @@ sequelize.sync({ force: false })
     }
 
     app.listen(port, () => {
+        // console.log(`Server is running at http://localhost:${port}`);
         console.log(`Server is running at http://${process.env.ADMIN_MYSQL_HOST}:${port}`);
     });
   })

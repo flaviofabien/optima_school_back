@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Teacher = require("./teacher.model");
-const Student = require("./student.model");
 const Salle = require("./salle.model");
 const Matiere = require("./matiere.model");
 const Classe = require("./classes.model");
@@ -77,8 +76,5 @@ Classe.hasMany(Cours, { foreignKey: "idClasse" });
 
 Cours.belongsTo(Teacher, { foreignKey: "idTeacher", onDelete: "CASCADE" });
 Teacher.hasMany(Cours, { foreignKey: "idTeacher" });
-
-Cours.belongsToMany(Student, { through: "CoursEleves", foreignKey: "coursId" ,onDelete: "CASCADE" });
-Student.belongsToMany(Cours, { through: "CoursEleves", foreignKey: "eleveId" ,onDelete: "CASCADE" });
 
 module.exports = Cours;

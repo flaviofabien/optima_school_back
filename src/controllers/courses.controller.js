@@ -1,6 +1,7 @@
 require('../constant/global');
 const Classe = require('../models/classes.model');
 const Cours = require('../models/courses.model');
+const Ecole = require('../models/ecole.model');
 const Matiere = require('../models/matiere.model');
 const Salle = require('../models/salle.model');
 const Student = require('../models/student.model');
@@ -12,7 +13,6 @@ exports.getAllCourses = async (req, res) => {
       include: [ 
         { model: Salle,required: false, },
         { model: Teacher,required: false, },
-        { model: Student,required: false, },
         { model: Matiere,required: false, },
         { model: Classe,required: false, },
       ],
@@ -20,6 +20,7 @@ exports.getAllCourses = async (req, res) => {
 
     res.json({ message: 'Users retrieved successfully', data: users });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: 'Error retrieving users', error });
   }
 };
@@ -28,35 +29,38 @@ exports.getAllIncludeCourses = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const salle = await Salle.findAll(
-      {
-        include : [
-          {
-            model: Classe,
-            where: { idUser: userId },
-            required: true, 
-          },
-        ],
-
-      }
-    );
-    const teacher = await Teacher.findAll();
-    const student = await Student.findAll();
     const classe = await Classe.findAll({
-      where: { idUser: userId },
-    });
-    const matiere = await Matiere.findAll({
       include : [
         {
-          model: Classe,
+          model: Ecole,
           where: { idUser: userId },
           required: true, 
         },
       ],
     });
+    const salle = await Salle.findAll(
+      {
+        include : [
+          {
+            model: Classe,
+            required: true, 
+          },
+        ],
+        
+      }
+    );
+      const matiere = await Matiere.findAll({
+        include : [
+          {
+            model: Classe,
+            required: true, 
+          },
+        ],
+      });
+    const teacher = await Teacher.findAll();
 
     res.json({ message: 'Users retrieved successfully', data: {
-      salle , teacher , student , matiere , classe
+      salle , teacher  , matiere , classe
     } });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving users', error });
@@ -65,7 +69,7 @@ exports.getAllIncludeCourses = async (req, res) => {
 
 exports.postCourses = async (req, res) => {
   try {
-    const { idSalle, idClasse ,eleveIds,idTeacher , idMatiere, jour, heureDebut, heureFin, salle } = req.body;
+    const { idSalle, idClasse ,idTeacher , idMatiere, jour, heureDebut, heureFin, salle } = req.body;
 
     const newCours = await Cours.create({
       idSalle,
@@ -77,10 +81,6 @@ exports.postCourses = async (req, res) => {
       heureFin,
       salle
     });
-
-    if (eleveIds && eleveIds.length > 0) {
-      await newCours.addStudent(eleveIds); 
-    }
 
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newCours });
   } catch (error) {
