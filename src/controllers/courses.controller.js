@@ -6,13 +6,16 @@ const Matiere = require('../models/matiere.model');
 const Salle = require('../models/salle.model');
 const Student = require('../models/student.model');
 const Teacher = require('../models/teacher.model');
+const User = require('../models/user.model');
 
 exports.getAllCourses = async (req, res) => {
   try {
     const users = await Cours.findAll({
       include: [ 
         { model: Salle,required: false, },
-        { model: Teacher,required: false, },
+        { model: Teacher , include : [{
+          model : User,required: false,
+        }],required: false, },
         { model: Matiere,required: false, },
         { model: Classe,required: false, },
       ],

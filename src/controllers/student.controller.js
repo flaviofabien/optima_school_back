@@ -1,65 +1,27 @@
 const Student = require('../models/student.model');
-const Salle = require('../models/salle.model');
+const Examen = require('../models/examen.model');
 const { Op } = require('sequelize');
 const Classe = require('../models/classes.model');
+const Niveau = require('../models/niveau.model');
+const User = require('../models/user.model');
+const bcrypt = require("bcrypt")
 require('../constant/global');
-
-exports.getAllStudentsExamen = async (req, res) => {
-  try {
-    const { idClasse } = req.query;
-    if (!idClasse) {
-      return res.status(400).json({ message: 'L\'ID de la classe est requis.' });
-    }
-
-    const students = await Student.findAll({ where: { idClasse: idClasse } });
-    const salles = await Salle.findAll({ where: { idClasse: idClasse } });
-
-    const shuffledStudents = students.sort(() => 0.5 - Math.random());
-
-    let studentIndex = 0;
-
-    const newStudentRooms = salles.map(salle => {
-      const roomCapacity = salle.effectif;
-      const studentsForThisRoom = [];
-
-      for (let i = 0; i < roomCapacity && studentIndex < shuffledStudents.length; i++) {
-        studentsForThisRoom.push(shuffledStudents[studentIndex].toJSON());
-        studentIndex++;
-      }
-
-      return {
-        salle: salle.nom,
-        students: studentsForThisRoom
-      };
-    });
-
-    res.json({ message: 'Affectation des étudiants réussie', data: newStudentRooms });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error retrieving students', error });
-  }
-};
 
 exports.getAllStudents = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; 
     const limit = parseInt(req.query.limit) || 6; 
     const offset = (page - 1) * limit;
-    const sortBy = req.query.sortBy || 'nom'; 
+    const sortBy = req.query.sortBy || 'sex'; 
     const order = req.query.order === 'desc' ? 'DESC' : 'ASC'; 
     const search = req.query.search || ''; 
 
     const whereCondition = search ? {
          [Op.or]: [
-             { nom: { [Op.like]: `%${search}%` } },
-             { prenom: { [Op.like]: `%${search}%` } },
-             { matricule: { [Op.like]: `%${search}%` } },
              { dateNaissance: { [Op.like]: `%${search}%` } },
              { sex: { [Op.like]: `%${search}%` } },
              { address: { [Op.like]: `%${search}%` } },
              { phone: { [Op.like]: `%${search}%` } },
-             { email: { [Op.like]: `%${search}%` } },
          ]
     } : {};
 
@@ -71,12 +33,18 @@ exports.getAllStudents = async (req, res) => {
       include: [
         {
           model: Classe,
-          required: true, 
+          required: true,
+        },
+        {
+          model: Niveau,
+          required: true,
+        },
+        {
+          model: User,
+          required: true,
         },
       ],
     });
-
-    console.log(result.rows);
 
     const totalItems = result.count;
     const totalPages = Math.ceil(totalItems / limit);
@@ -94,21 +62,78 @@ exports.getAllStudents = async (req, res) => {
   }
 };
 
+exports.getAllStudentExtendExamen = async (req, res) => {
+  try {
+    const assignedExams = await Examen.findAll({
+      attributes: [], 
+      include: [
+        {
+          model: Student,
+          as: 'students', 
+          attributes: ['id'],
+          through: { attributes: [] } 
+        },
+      ],
+    });
+
+       const assignedStudentIds = assignedExams.flatMap(examen =>
+        examen.students?.map(student => student.id) || []
+      );
+      
+      const unassignedStudents = await Student.findAll({
+        include: [
+          {
+            model: Classe,
+            required: false, 
+          },
+        ],
+        where: {
+          id: {
+            [Op.notIn]: assignedStudentIds
+          }
+        }
+      });
+  
+
+    res.json({
+      message: 'Student retrieved successfully',
+      data:unassignedStudents ,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Error retrieving students', error });
+  }
+};
+
 exports.postStudents = async (req, res) => {
   try {
-    const body = req.body;
+    const {email,password,role,prenom,nom,idClasse,idNiveau,idSalle,dateNaissance,sex,address,phone,status} = req.body;
 
     if (!req.file) return res.status(400).send('Aucun fichier téléchargé.');
     const file = req.file;
     const imageUrl = `/uploads/${file.filename}`;
 
-    const newUser = await Student.create({
-      ...body , img : imageUrl
-    });
-    
+    const newStudent = await Student.create(
+      {idClasse,idNiveau,idSalle,dateNaissance,sex,address,phone,status} 
+    );
 
-    res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
-  } catch (error) {    
+    if (!newStudent)  return res.status(400).send('Aucun Etudiant cree.');
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      nom , prenom , email, password: hashedPassword, role , img : imageUrl 
+    });
+
+    if (!newUser)  return res.status(400).send('Aucun Etudiant cree.');
+    const finalStudent = await newStudent.update({ idUser: newUser.id });
+    if (!finalStudent)  return res.status(400).send('final ne fonctionne pas ');
+
+
+    res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: finalStudent });
+
+  } catch (error) {  
+    console.log(error);  
     if (error.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({ 
         message: error.errors[0].message || "Contrainte unique violée" 
@@ -140,16 +165,10 @@ exports.putStudent = async (req, res) => {
   try {
     const body = req.body;
 
-    let imageUrl;
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-      body.img = imageUrl;
-    }
-
     const [updated] = await Student.update(body, { where: { id: req.params.id } });
 
-    if (updated === 0) {
-      return res.status(404).json({ message: 'École non trouvée ❌' });
+    if (!updated) {
+      return res.status(404).json({ message: 'Aucun modification ❌' });
     }
 
     const updatedEcole = await Student.findByPk(req.params.id);

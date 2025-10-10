@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const Classe = require('../models/classes.model');
 const Ecole = require('../models/ecole.model');
+const Niveaux = require('../models/niveau.model');
 require('../constant/global');
 
 exports.getAllClasses = async (req, res) => {
@@ -36,7 +37,10 @@ exports.getAllClasses = async (req, res) => {
 
     const result = await Classe.findAndCountAll({
       order: orderClause,
-      include: [includeOptions],
+      include: [includeOptions,{
+        model: Niveaux,
+        required: false,
+      }],
       where: whereCondition,
       limit,
       offset
@@ -58,7 +62,7 @@ exports.getAllClasses = async (req, res) => {
 
 exports.postClasses = async (req, res) => {
   try {
-    const {idEcole ,  nom  } = req.body;
+    const {idEcole ,  nom , idNiveau } = req.body;
 
     const ecole = await Ecole.findByPk(idEcole);
 
@@ -68,13 +72,21 @@ exports.postClasses = async (req, res) => {
         });
     }
 
-  
+    const niveau = await Niveaux.findByPk(idNiveau);
+
+    if (!niveau) {
+        return res.status(400).json({
+          message: "niveau n'existe pas."
+        });
+    }
+
     const newUser = await Classe.create({
-        idEcole ,  nom
+        idEcole ,  nom , idNiveau
     });
 
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
   } catch (error) {
+    console.log(error);
     if (error.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({ 
         message: error.errors[0].message || "Contrainte unique violée" 

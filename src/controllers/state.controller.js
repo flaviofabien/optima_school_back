@@ -16,9 +16,9 @@ exports.getAllState = async (req, res) => {
         nbStudent : student.length,
         nbTeach : teach.length,
         nbUser : user.length,
-
     } });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: 'Error retrieving users', error });
   }
 };

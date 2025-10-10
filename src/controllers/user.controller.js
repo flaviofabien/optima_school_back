@@ -55,11 +55,16 @@ exports.postUsers = async (req, res) => {
   try {
     const { nom ,prenom ,  email, password, role } = req.body;
     
+    console.log(nom ,prenom ,  email, password, role );
     if (role !== "admin" )  {
       return  res.status(404).json({ 
         message: "Role doit etre dans admin  ", 
       });
     } 
+    
+    if (!req.file) return res.status(400).send('Aucun fichier téléchargé.');
+    const file = req.file;
+    const imageUrl = `/uploads/${file.filename}`;
 
     if (!REGEX.test(password)) {
       return res.status(400).json({
@@ -70,7 +75,7 @@ exports.postUsers = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-      nom , prenom , email, password: hashedPassword, role 
+      nom , prenom , email, password: hashedPassword, role , img : imageUrl 
     });
 
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
@@ -106,12 +111,20 @@ exports.getOneUser = async (req, res) => {
 
 exports.putUser = async (req, res) => {
   try {
-    const [updated] = await User.update(req.body, { where: { id: req.params.id } });
-    if (!updated) return res.status(404).json({ message: 'Aucun modification ' });
+    const body = req.body;
 
-    const updatedUser = await User.findByPk(req.params.id);
+    let imageUrl;
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
+      body.img = imageUrl;
+    }
 
-    res.json({ message: 'User updated successfully', data: updatedUser });
+    const [updated] = await User.update(body, { where: { id: req.params.id } })
+
+    if (updated === 0) return res.status(404).json({ message: 'École non trouvée ❌' });
+
+    const updatedEcole = await User.findByPk(req.params.id);
+    res.status(200).json({ message: 'École mise à jour avec succès ✅', data: updatedEcole });
   } catch (error) {
     res.status(500).json({ message: 'Error updating user', error });
   }

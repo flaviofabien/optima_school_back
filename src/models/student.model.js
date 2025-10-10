@@ -1,6 +1,10 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Classe = require("./classes.model");
+const Niveaux = require("./niveau.model");
+const Salle = require("./salle.model");
+const User = require("./user.model");
+
 
 const Student = sequelize.define("Student",{
     id : {
@@ -16,14 +20,24 @@ const Student = sequelize.define("Student",{
           key: "id",
         },
         onDelete: "CASCADE",
-      },
-    matricule : {
-        type : DataTypes.STRING,
-        allowNull : false,
-        validate: {
-            notEmpty: { msg: "Le nom ne doit pas être vide" },
-            len: [3, 50],
-        }
+    },
+    idNiveau: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: Niveaux, 
+          key: "id",
+        },
+        onDelete: "CASCADE",
+    },
+    idSalle: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: Salle, 
+          key: "id",
+        },
+        onDelete: "CASCADE",
     },
     dateNaissance : {
         type : DataTypes.STRING,
@@ -63,58 +77,30 @@ const Student = sequelize.define("Student",{
             notEmpty: { msg: "Le phone ne doit pas être vide" },
         }
     },
-    nom : {
-        type : DataTypes.STRING,
-        allowNull : false,
-        validate: {
-            notEmpty: { msg: "Le nom ne doit pas être vide" },
-            len: [3, 50],
-          }
-    },
-    prenom : {
-        type : DataTypes.STRING,
-        allowNull : false,
-        validate: {
-            notEmpty: { msg: "Le prenom ne doit pas être vide" },
-            len: [3, 50],
-          }
-    },
-    email : {
-        type : DataTypes.STRING,
-        allowNull : false,
-        validate: {
-            notEmpty: { msg: "Le email ne doit pas être vide" },
+    idUser : {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: User, 
+          key: "id",
         },
-    },
-    password : {
-        type : DataTypes.STRING,
-        allowNull : false,
-        validate: {
-            notEmpty: { msg: "Le password ne doit pas être vide" },
-        }
-    },
-    role : {
-        type : DataTypes.STRING,
-        allowNull : false, 
-        validate: {
-            notEmpty: { msg: "Le role ne doit pas être vide" },
-        }
-    },
-    img : {
-        type : DataTypes.STRING,
-        allowNull : false, 
-        validate: {
-            notEmpty: { msg: "Le role ne doit pas être vide" },
-        }
-    },
+        onDelete: "CASCADE",
+    }
 },{
     timestamps : true,
     createdAt : false,
     updatedAt : false
 })
+Student.belongsTo(User, { foreignKey: "idUser", onDelete: "CASCADE" });
+User.hasOne(Student, { foreignKey: "idUser" });
 
 Student.belongsTo(Classe, { foreignKey: "idClasse", onDelete: "CASCADE" });
 Classe.hasMany(Student, { foreignKey: "idClasse" });
 
+Student.belongsTo(Niveaux, { foreignKey: "idNiveau", onDelete: "CASCADE" });
+Niveaux.hasMany(Student, { foreignKey: "idNiveau" });
+
+Student.belongsTo(Salle, { foreignKey: "idSalle", onDelete: "CASCADE" });
+Salle.hasMany(Student, { foreignKey: "idSalle" });
 
 module.exports = Student;

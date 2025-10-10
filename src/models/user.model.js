@@ -18,6 +18,13 @@ const User = sequelize.define("User",{
             } 
           }
     },
+    img: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: { img: "L'img d'école ne doit pas être vide" },
+        }
+    },
     prenom : {
         type : DataTypes.STRING,
         allowNull : false,

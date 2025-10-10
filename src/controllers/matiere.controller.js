@@ -90,7 +90,13 @@ exports.postMatieres = async (req, res) => {
 
 exports.getOneMatiere = async (req, res) => {
   try {
-    const user = await Matiere.findByPk(req.params.id);
+    const user = await Matiere.findByPk(req.params.id , {
+      include : [
+        {
+        model : Classe,
+        required : false,
+        }]
+    });
     if (!user) return res.status(404).json({ message: 'User not found' });
     
     res.json({ message: 'User retrieved successfully', data: user });

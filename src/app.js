@@ -8,11 +8,17 @@ const userRoutes = require('./routes/user.routes');
 const studentRoutes = require('./routes/student.routes');
 const teachRoutes = require('./routes/teacher.routes');
 
+const anneeScolaireRoutes = require('./routes/anneeScolaire.routes');
+const niveauRoutes = require('./routes/niveau.routes');
 const ecoleRoutes = require('./routes/ecole.routes');
 const classesRoutes = require('./routes/classes.routes');
 const salleRoutes = require('./routes/salle.routes');
 const courseRoutes = require('./routes/course.routes');
 const matiereRoutes = require('./routes/matiere.route');
+const categorieRoutes = require('./routes/categorie.routes');
+const partionSalleRoutes = require('./routes/partition-salle.route');
+const examenRoutes = require('./routes/examen.routes');
+const notesRoutes = require('./routes/notes.routes');
 
 const StateRoutes = require('./routes/state.routes');
 const path = require('path');
@@ -26,11 +32,17 @@ app
   .use(cors()); 
 
 /* etablissement */
+app.use("/api", niveauRoutes);
+app.use("/api", anneeScolaireRoutes);
 app.use("/api", ecoleRoutes);
 app.use("/api", classesRoutes);
 app.use("/api", salleRoutes);
 app.use("/api", courseRoutes);
 app.use("/api", matiereRoutes);
+app.use("/api", categorieRoutes);
+app.use("/api", partionSalleRoutes);
+app.use("/api", examenRoutes);
+app.use("/api", notesRoutes);
 
   /* acteur */
 app.use("/api", authRoutes);

@@ -1,33 +1,49 @@
 const { Op } = require('sequelize');
 const Teacher = require('../models/teacher.model');
-const Classe = require('../models/classes.model');
+const User = require('../models/user.model');
 require('../constant/global');
+const bcrypt = require("bcrypt");
+const Matiere = require('../models/matiere.model');
+const Classe = require('../models/classes.model');
 
 exports.getAllTeachs = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; 
     const limit = parseInt(req.query.limit) || 6; 
     const offset = (page - 1) * limit;
-    const sortBy = req.query.sortBy || 'nom'; 
+    const sortBy = req.query.sortBy || 'sex'; 
     const order = req.query.order === 'desc' ? 'DESC' : 'ASC'; 
     const search = req.query.search || ''; 
 
     const whereCondition = search ? {
          [Op.or]: [
-          { nom: { [Op.like]: `%${search}%` } },
-          { prenom: { [Op.like]: `%${search}%` } },
           { matricule: { [Op.like]: `%${search}%` } },
           { dateNaissance: { [Op.like]: `%${search}%` } },
           { sex: { [Op.like]: `%${search}%` } },
           { address: { [Op.like]: `%${search}%` } },
           { phone: { [Op.like]: `%${search}%` } },
-          { email: { [Op.like]: `%${search}%` } },
          ]
     } : {};
 
     const result = await Teacher.findAndCountAll({
       order: [[sortBy, order]],
       where: whereCondition,
+      include : [
+        {
+          model : Matiere,
+          require : false
+        },
+        {
+          model : Classe,
+          require : false
+        },
+        
+        {
+          model : User,
+          require : false
+        },
+
+    ], 
       limit,
       offset,
     });
@@ -50,18 +66,33 @@ exports.getAllTeachs = async (req, res) => {
 
 exports.postTeachs = async (req, res) => {
   try {
-    const body = req.body;
+    const {email,password,role,prenom,nom,idClasse,idMatiere,sex,address,phone,status,specialite} = req.body;
 
     if (!req.file) return res.status(400).send('Aucun fichier téléchargé.');
     const file = req.file;
     const imageUrl = `/uploads/${file.filename}`;
 
-    const newUser = await Teacher.create({
-      ...body , img : imageUrl
+    /* create teacher */
+    const newTeacher = await Teacher.create(
+      {idClasse,idMatiere,sex,address,phone,status,specialite} 
+    );
+
+    if (!newTeacher)  return res.status(400).send('Aucun Etudiant cree.');
+
+    /* create account */
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      nom , prenom , email, password: hashedPassword, role , img : imageUrl 
     });
 
-    res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
+    if (!newUser)  return res.status(400).send('Aucun Etudiant cree.');
+    const finalStudent = await newTeacher.update({ idUser: newUser.id });
+    if (!finalStudent)  return res.status(400).send('final ne fonctionne pas ');
+
+    res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: finalStudent });
   } catch (error) {    
+    console.log(error);  
     if (error.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({ 
         message: error.errors[0].message || "Contrainte unique violée" 

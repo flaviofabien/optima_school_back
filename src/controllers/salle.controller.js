@@ -1,5 +1,12 @@
 const Classe = require('../models/classes.model');
+const Ecole = require('../models/ecole.model');
+const Niveaux = require('../models/niveau.model');
 const Salle = require('../models/salle.model');
+const Categorie = require('../models/categorie.model');
+const AnneeScolaire = require('../models/anneeScolaire.model');
+const Matiere = require('../models/matiere.model');
+const Teacher = require('../models/teacher.model');
+const User = require('../models/user.model');
 require('../constant/global');
 
 exports.getAllSalles = async (req, res) => {
@@ -57,6 +64,45 @@ exports.getAllSalles = async (req, res) => {
   }
 };
 
+
+exports.getAllSalleIncludeEcole = async (req, res) => {
+  try {
+    const salle = await Salle.findAll();
+    const classe = await Classe.findAll();
+    const niveau = await Niveaux.findAll({
+      include : [
+        {
+          model: Ecole,
+          as: "ecoles",   
+        }
+      ]
+    });
+    const ecole = await Ecole.findAll({
+      include : [{
+        model :Classe,
+        required : false
+      }]
+    });
+    const categorie = await Categorie.findAll();
+    const anneeScolaire = await AnneeScolaire.findAll();
+    const matiere = await Matiere.findAll();
+    const teacher = await Teacher.findAll({
+      include : [{
+        model : User,
+        required : false
+      }]
+    });
+
+    res.json({ message: 'Examen retrieved successfully', data: {
+      salle , classe , niveau , ecole , categorie , anneeScolaire , matiere , teacher
+    } });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Error retrieving Salle', error });
+  }
+};
+
 exports.postSalles = async (req, res) => {
   try {
     const {idClasse ,  effectif , nom } = req.body;
@@ -93,11 +139,18 @@ exports.postSalles = async (req, res) => {
 
 exports.getOneSalle = async (req, res) => {
   try {
-    const user = await Salle.findByPk(req.params.id);
+    const user = await Salle.findByPk(req.params.id , {
+      include : [
+        {
+        model : Classe,
+        required : false,
+        }]
+    });
     if (!user) return res.status(404).json({ message: 'User not found' });
     
     res.json({ message: 'User retrieved successfully', data: user });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: 'Error retrieving user', error });
   }
 };

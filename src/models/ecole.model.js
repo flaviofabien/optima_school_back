@@ -39,10 +39,6 @@ const Ecole = sequelize.define("Ecole", {
             } 
         }
     },
-    type: {
-        type: DataTypes.JSON,
-        allowNull: false,
-    },
     img: {
         type: DataTypes.STRING,
         allowNull: false,
