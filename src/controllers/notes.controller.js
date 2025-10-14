@@ -1,4 +1,6 @@
+const Matiere = require('../models/matiere.model');
 const Notes = require('../models/notes.model');
+const Salle = require('../models/salle.model');
 const Student = require('../models/student.model');
 require('../constant/global');
 
@@ -8,13 +10,22 @@ exports.getAllNotes = async (req, res) => {
       include : [ 
         {
         model : Student,
-        required : true 
-        }
+        required : false 
+        },
+        {
+        model : Matiere,
+        required : false 
+        },
+        {
+        model : Salle,
+        required : false 
+        },
       ]
     });
 
     res.json({ message: 'Notes retrieved successfully', data: notes });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: 'Error retrieving notes', error });
   }
 };
@@ -22,10 +33,10 @@ exports.getAllNotes = async (req, res) => {
 
 exports.postNotes = async (req, res) => {
   try {
-    const { idStudent , notes } = req.body;
+    const { idStudent , note , idSalle ,  idMatiere } = req.body;
   
     const newUser = await Notes.create({
-        idStudent , notes
+        idStudent , note , idSalle , idMatiere
     });
 
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });

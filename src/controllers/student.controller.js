@@ -71,8 +71,13 @@ exports.getAllStudentExtendExamen = async (req, res) => {
           model: Student,
           as: 'students', 
           attributes: ['id'],
-          through: { attributes: [] } 
+          through: { attributes: [] },
+      include: [{
+          model: User,
+          required: true,
+        },]
         },
+         
       ],
     });
 
@@ -85,6 +90,10 @@ exports.getAllStudentExtendExamen = async (req, res) => {
           {
             model: Classe,
             required: false, 
+          },
+          {
+          model: User,
+          required: true,
           },
         ],
         where: {

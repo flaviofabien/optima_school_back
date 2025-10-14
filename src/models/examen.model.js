@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Salle = require("./salle.model");
 const Student = require("./student.model");
+const Categorie = require("./categorie.model");
 
 const Examen = sequelize.define("Examen", {
   id: {
@@ -18,12 +19,14 @@ const Examen = sequelize.define("Examen", {
     },
     onDelete: "CASCADE",
   },
-  nom: {
-    type: DataTypes.STRING,
+  idCategorie: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    unique : {
-      msg : "cette nom existe deja , Réessayer  une autre "
-    }
+    references: {
+      model: Categorie, 
+      key: "id",
+    },
+    onDelete: "CASCADE",
   },
 });
 
@@ -42,7 +45,11 @@ Student.belongsToMany(Examen, {
   as: 'examens',
   onDelete: 'CASCADE'
 });
+
 Examen.belongsTo(Salle, { foreignKey: "idSalle", onDelete: "CASCADE" });
 Salle.hasMany(Examen, { foreignKey: "idSalle" });
+
+Examen.belongsTo(Categorie, { foreignKey: "idCategorie", onDelete: "CASCADE" });
+Categorie.hasMany(Examen, { foreignKey: "idCategorie" });
 
 module.exports = Examen;

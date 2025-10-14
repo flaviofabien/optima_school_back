@@ -5,6 +5,8 @@ const Student = require('../models/student.model');
 const Examen = require('../models/examen.model');
 const Classe = require('../models/classes.model');
 const Ecole = require('../models/ecole.model');
+const Categorie = require('../models/categorie.model');
+const User = require('../models/user.model');
 
 exports.getAllExamens = async (req, res) => {
   try {
@@ -22,12 +24,21 @@ exports.getAllExamens = async (req, res) => {
             },
           },
         },
+        {
+          model : Categorie,
+          required : false
+        },
         { 
           model: Student, 
-          include : {
+          include : [
+            {
             model : Classe,
             required : false
+          },{
+            model : User,
+            required : false
           },
+          ] ,
           as: 'students',
           through: { attributes: [] } 
         },
@@ -44,15 +55,15 @@ exports.getAllExamens = async (req, res) => {
 
 exports.postExamens = async (req, res) => {
   try {
-    const { idSalle, idEleves, nom } = req.body;
+    const { idSalle, idEleves, idCategorie } = req.body;
 
-    if (!idSalle || !nom || !Array.isArray(idEleves)) {
+    if (!idSalle || !idCategorie || !Array.isArray(idEleves)) {
       return res.status(400).json({ message: "Champs requis manquants ou invalides." });
     }
 
     const newExamen = await Examen.create({
       idSalle,
-      nom
+      idCategorie
     });
 
 
@@ -100,10 +111,12 @@ exports.getOneExamen = async (req, res) => {
 
 exports.putExamen = async (req, res) => {
   try {
-    const [updated] = await Examen.update(req.body, { where: { id: req.params.id } });
-    if (!updated) return res.status(404).json({ message: 'Ecole not found' });
-
+    const { idEleves } = req.body;
     const updatedExamen = await Examen.findByPk(req.params.id);
+
+    if (idEleves.length > 0) {
+      await updatedExamen.setStudents(idEleves); 
+    }
 
     res.json({ message: 'Examen updated successfully', data: updatedExamen });
   } catch (error) {
