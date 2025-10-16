@@ -72,10 +72,12 @@ exports.getAllStudentExtendExamen = async (req, res) => {
           as: 'students', 
           attributes: ['id'],
           through: { attributes: [] },
-      include: [{
-          model: User,
-          required: true,
-        },]
+          include: [
+            {
+            model: User,
+            required: true,
+           }
+        ,]
         },
          
       ],

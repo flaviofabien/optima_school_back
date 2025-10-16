@@ -2,7 +2,19 @@ const Matiere = require('../models/matiere.model');
 const Notes = require('../models/notes.model');
 const Salle = require('../models/salle.model');
 const Student = require('../models/student.model');
+const User = require('../models/user.model');
 require('../constant/global');
+
+exports.getAllBulletin = async (req, res) => {
+  try {
+    const notes = await Notes.findAll();
+
+    res.json({ message: 'Notes retrieved successfully', data: notes });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Error retrieving notes', error });
+  }
+};
 
 exports.getAllNotes = async (req, res) => {
   try {
@@ -10,6 +22,10 @@ exports.getAllNotes = async (req, res) => {
       include : [ 
         {
         model : Student,
+        include : [{
+          model : User,
+          required : false
+        }],
         required : false 
         },
         {
@@ -33,10 +49,10 @@ exports.getAllNotes = async (req, res) => {
 
 exports.postNotes = async (req, res) => {
   try {
-    const { idStudent , note , idSalle ,  idMatiere } = req.body;
+    const { idCategorie, idStudent , note , idSalle ,  idMatiere } = req.body;
   
     const newUser = await Notes.create({
-        idStudent , note , idSalle , idMatiere
+        idStudent ,idCategorie , note , idSalle , idMatiere
     });
 
     res.status(201).json({ message: 'Utilisateur Cree avec succès ✅', data: newUser });
@@ -85,11 +101,15 @@ exports.putNote = async (req, res) => {
 
 exports.deleteNote = async (req, res) => {
   try {
+    console.log(req.params.id);
     const deleted = await Notes.destroy({ where: { id: req.params.id } });
+        console.log(deleted);
+
     if (!deleted) return res.status(404).json({ message: 'User not found' });
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: 'Error deleting user', error });
   }
 };

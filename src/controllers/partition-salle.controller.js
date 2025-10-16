@@ -5,6 +5,7 @@ const Student = require('../models/student.model');
 const Classe = require('../models/classes.model');
 const Ecole = require('../models/ecole.model');
 const PartitionSalle = require('../models/partitionSalle.model');
+const User = require('../models/user.model');
 
 exports.getAllPartitionSalles = async (req, res) => {
   try {
@@ -17,6 +18,10 @@ exports.getAllPartitionSalles = async (req, res) => {
       {
         model : Student,
         as: 'students',
+        include : {
+          model : User,
+          required : false
+        },
         required : false,
         through: { attributes: [] } ,
       }
@@ -27,8 +32,7 @@ exports.getAllPartitionSalles = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Error retrieving PartitionSalle', error });
-  }
-};
+  }};
 
 
 exports.postPartitionSalles = async (req, res) => {
@@ -85,10 +89,12 @@ exports.getOnePartitionSalle = async (req, res) => {
 
 exports.putPartitionSalle = async (req, res) => {
   try {
-    const [updated] = await PartitionSalle.update(req.body, { where: { id: req.params.id } });
-    if (!updated) return res.status(404).json({ message: 'Ecole not found' });
-
+    const { idEleves } = req.body;
     const updatedPartitionSalle = await PartitionSalle.findByPk(req.params.id);
+
+    if (idEleves.length > 0) {
+      await updatedPartitionSalle.setStudents(idEleves); 
+    }
 
     res.json({ message: 'PartitionSalle updated successfully', data: updatedPartitionSalle });
   } catch (error) {

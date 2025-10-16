@@ -7,6 +7,7 @@ const AnneeScolaire = require('../models/anneeScolaire.model');
 const Matiere = require('../models/matiere.model');
 const Teacher = require('../models/teacher.model');
 const User = require('../models/user.model');
+const Student = require('../models/student.model');
 require('../constant/global');
 
 exports.getAllSalles = async (req, res) => {
@@ -92,9 +93,14 @@ exports.getAllSalleIncludeEcole = async (req, res) => {
         required : false
       }]
     });
-
+  const student = await Student.findAll({
+      include : [{
+        model : User,
+        required : false
+      }]
+    });
     res.json({ message: 'Examen retrieved successfully', data: {
-      salle , classe , niveau , ecole , categorie , anneeScolaire , matiere , teacher
+      salle , classe , niveau , ecole , categorie , anneeScolaire , matiere , teacher , student
     } });
 
   } catch (error) {
