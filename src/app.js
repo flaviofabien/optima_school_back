@@ -19,6 +19,10 @@ const categorieRoutes = require('./routes/categorie.routes');
 const partionSalleRoutes = require('./routes/partition-salle.route');
 const examenRoutes = require('./routes/examen.routes');
 const notesRoutes = require('./routes/notes.routes');
+const absenceRoutes = require('./routes/absence.routes');
+const payementRoutes = require('./routes/payement.route');
+const messageRoutes = require('./routes/message.route');
+
 
 const StateRoutes = require('./routes/state.routes');
 const path = require('path');
@@ -32,6 +36,8 @@ app
   .use(cors()); 
 
 /* etablissement */
+
+app.use("/api", payementRoutes);
 app.use("/api", niveauRoutes);
 app.use("/api", anneeScolaireRoutes);
 app.use("/api", ecoleRoutes);
@@ -43,6 +49,8 @@ app.use("/api", categorieRoutes);
 app.use("/api", partionSalleRoutes);
 app.use("/api", examenRoutes);
 app.use("/api", notesRoutes);
+app.use("/api", absenceRoutes);
+app.use("/api", messageRoutes);
 
   /* acteur */
 app.use("/api", authRoutes);

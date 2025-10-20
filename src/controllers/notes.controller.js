@@ -1,3 +1,4 @@
+const Categorie = require('../models/categorie.model');
 const Matiere = require('../models/matiere.model');
 const Notes = require('../models/notes.model');
 const Salle = require('../models/salle.model');
@@ -36,6 +37,11 @@ exports.getAllNotes = async (req, res) => {
         model : Salle,
         required : false 
         },
+        {
+        model : Categorie,
+        required : false 
+        },
+        
       ]
     });
 
